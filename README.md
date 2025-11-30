@@ -4,7 +4,7 @@ A modern, interactive CV builder built with React and Vite. Create professional 
 
 ## 📸 Screenshots
 
-![CV Editor Interface](main-interface.png)
+![CV Editor Interface](./public/main-interface.png)
 *Main interface showing the editor and live preview side by side*
 
 ## ✨ Features
