@@ -24,15 +24,26 @@ const PersonalCard = memo(({ personal, setPersonal }) => {
       ) : (
         <div className="bg-gray-50 rounded-lg p-6">
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {personal.firstName} {personal.lastName}
-              </h2>
-              {personal.title && (
-                <span className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full font-medium">
-                  {personal.title}
-                </span>
-              )}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4 min-w-0">
+                {personal.photo && (
+                  <img
+                    src={personal.photo}
+                    alt="Profile"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-gray-200 shrink-0"
+                  />
+                )}
+                <div className="min-w-0 flex flex-wrap items-center gap-2">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {personal.firstName} {personal.lastName}
+                  </h2>
+                  {personal.title && (
+                    <span className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full font-medium">
+                      {personal.title}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
             
             <div className="space-y-2 text-sm text-gray-600">

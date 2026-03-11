@@ -1,6 +1,35 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import html2pdf from "html2pdf.js";
 import ContentEditor from "./components/ContentEditor/ContentEditor";
 import Preview from "./components/Preview/Preview";
+
+function DownloadButton({ onClick, isDownloading }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={isDownloading}
+      className="flex items-center gap-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-500 disabled:cursor-not-allowed text-white font-semibold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-200 border border-emerald-700/30"
+      aria-label="Download CV as PDF"
+    >
+      {isDownloading ? (
+        <>
+          <svg className="w-5 h-5 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <span>Generating PDF…</span>
+        </>
+      ) : (
+        <>
+          <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+          <span>Download PDF</span>
+        </>
+      )}
+    </button>
+  );
+}
 
 export default function App() {
   // Mobile view state
@@ -30,10 +59,44 @@ export default function App() {
     }
   }, [showEditor, isMobile]);
 
-  // Personal info state
+  const previewRef = useRef(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    const element = previewRef.current;
+    if (!element) return;
+    setIsDownloading(true);
+    try {
+      element.scrollIntoView({ behavior: "instant", block: "start" });
+      await new Promise((r) => setTimeout(r, 150));
+
+      const name = `${personal.firstName}_${personal.lastName}`.replace(/\s+/g, "_");
+      const opt = {
+        margin: 10,
+        filename: `${name}_CV.pdf`,
+        image: { type: "png", quality: 1 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+        },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
+
+      await html2pdf().set(opt).from(element).save();
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // Personal info state (photo is in-memory only, lost on refresh)
   const [personal, setPersonal] = useState({
     firstName: "John",
     lastName: "Doe",
+    photo: null,
     email: "john.doe@example.com",
     phone: "+1 (555) 123-4567",
     website: "https://johndoe.dev",
@@ -67,6 +130,23 @@ export default function App() {
     },
   ]);
 
+  // Certifications state
+  const [certifications, setCertifications] = useState([
+    {
+      id: crypto.randomUUID(),
+      name: "AWS Certified Developer",
+      issuer: "Amazon Web Services",
+      date: "2024-01",
+      url: "",
+    },
+  ]);
+
+  // Languages state
+  const [languages, setLanguages] = useState([
+    { id: crypto.randomUUID(), language: "English", proficiency: "Native" },
+    { id: crypto.randomUUID(), language: "Spanish", proficiency: "Intermediate" },
+  ]);
+
   return (
     <div className="flex h-screen relative">
       {/* Desktop: Side by side layout */}
@@ -79,15 +159,28 @@ export default function App() {
           setEducation={setEducation}
           experience={experience}
           setExperience={setExperience}
+          certifications={certifications}
+          setCertifications={setCertifications}
+          languages={languages}
+          setLanguages={setLanguages}
         />
 
         {/* Right Side: Preview */}
-        <div className="w-1/2 p-4 overflow-y-auto">
-          <Preview
-            personal={personal}
-            education={education}
-            experience={experience}
-          />
+        <div className="w-1/2 flex flex-col overflow-hidden">
+          <div className="flex justify-end p-3 border-b border-gray-200 bg-white shrink-0">
+            <DownloadButton onClick={handleDownloadPDF} isDownloading={isDownloading} />
+          </div>
+          <div className="flex-1 p-4 overflow-y-auto">
+            <div ref={!isMobile ? previewRef : null}>
+              <Preview
+                personal={personal}
+                education={education}
+                experience={experience}
+                certifications={certifications}
+                languages={languages}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -101,14 +194,27 @@ export default function App() {
             setEducation={setEducation}
             experience={experience}
             setExperience={setExperience}
+            certifications={certifications}
+            setCertifications={setCertifications}
+            languages={languages}
+            setLanguages={setLanguages}
           />
         ) : (
-          <div className="w-full p-4 overflow-y-auto">
-            <Preview
-              personal={personal}
-              education={education}
-              experience={experience}
-            />
+          <div className="w-full flex flex-col h-screen overflow-hidden">
+            <div className="flex justify-end p-3 border-b border-gray-200 bg-white shrink-0">
+              <DownloadButton onClick={handleDownloadPDF} isDownloading={isDownloading} />
+            </div>
+            <div className="flex-1 p-4 overflow-y-auto">
+              <div ref={isMobile ? previewRef : null}>
+                <Preview
+                  personal={personal}
+                  education={education}
+                  experience={experience}
+                  certifications={certifications}
+                  languages={languages}
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>

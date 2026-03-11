@@ -96,6 +96,20 @@ export default function PersonalForm({ entry, onSave, onCancel }) {
     setErrors(prev => ({ ...prev, [name]: null }));
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => setForm((prev) => ({ ...prev, photo: reader.result }));
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleRemovePhoto = () => {
+    setForm((prev) => ({ ...prev, photo: null }));
+  };
+
   const handleSave = () => {
     const newErrors = {};
 
@@ -122,6 +136,54 @@ export default function PersonalForm({ entry, onSave, onCancel }) {
 
   return (
     <div className="space-y-4 border border-gray-200 bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
+      {/* Profile Photo - in-memory only, not persisted */}
+      <div className="flex flex-col mb-4">
+        <label className="mb-1 font-medium">Profile Photo (optional)</label>
+        <p className="text-xs text-gray-500 mb-2">
+          Upload a photo for your CV. It will appear in the preview and PDF. Refreshing the page will remove it.
+        </p>
+        <div className="flex items-center gap-4">
+          {form.photo ? (
+            <>
+              <img
+                src={form.photo}
+                alt="Profile"
+                className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
+              />
+              <div className="flex gap-2">
+                <label className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 cursor-pointer text-sm font-medium">
+                  Change
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="hidden"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  className="bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200 text-sm font-medium"
+                >
+                  Remove
+                </button>
+              </div>
+            </>
+          ) : (
+            <label className="flex flex-col items-center justify-center w-24 h-24 rounded-full border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50/50 cursor-pointer transition-colors">
+              <span className="text-2xl text-gray-400">📷</span>
+              <span className="text-xs text-gray-500 mt-1">Upload</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
+      </div>
+
       {fields.map(({ key, label, name, type, required, placeholder, maxLength, rows }) => (
         <div key={key}>
           <ContentInput
