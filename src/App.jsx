@@ -4,6 +4,32 @@ import ContentEditor from "./components/ContentEditor/ContentEditor";
 import Preview from "./components/Preview/Preview";
 
 const STORAGE_KEY = "cv-editor-data";
+const VIEW_KEY = "cv-editor-view";
+
+function loadSavedCvData() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.error("Failed to parse saved CV data:", e);
+    return null;
+  }
+}
+
+function getInitialIsMobile() {
+  if (typeof window === "undefined") return false;
+  return window.innerWidth < 1024;
+}
+
+function getInitialShowEditor() {
+  if (typeof window === "undefined") return true;
+  const isMobile = window.innerWidth < 1024;
+  if (!isMobile) return true;
+  const savedPreference = localStorage.getItem(VIEW_KEY);
+  if (!savedPreference) return true;
+  return savedPreference === "editor";
+}
 
 function DownloadButton({ onClick, isDownloading }) {
   return (
@@ -34,29 +60,18 @@ function DownloadButton({ onClick, isDownloading }) {
 }
 
 export default function App() {
-  const savedData =
-    typeof window !== "undefined"
-      ? (() => {
-          try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            return raw ? JSON.parse(raw) : null;
-          } catch (e) {
-            console.error("Failed to parse saved CV data:", e);
-            return null;
-          }
-        })()
-      : null;
+  const savedData = loadSavedCvData();
 
   // Mobile view state
-  const [showEditor, setShowEditor] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
+  const [showEditor, setShowEditor] = useState(getInitialShowEditor);
+  const [isMobile, setIsMobile] = useState(getInitialIsMobile);
 
   // Check screen size and set mobile state
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 1024);
       // Load preference from localStorage
-      const savedPreference = localStorage.getItem('cv-editor-view');
+      const savedPreference = localStorage.getItem(VIEW_KEY);
       if (savedPreference && window.innerWidth < 1024) {
         setShowEditor(savedPreference === 'editor');
       }
@@ -70,7 +85,7 @@ export default function App() {
   // Save preference to localStorage
   useEffect(() => {
     if (isMobile) {
-      localStorage.setItem('cv-editor-view', showEditor ? 'editor' : 'preview');
+      localStorage.setItem(VIEW_KEY, showEditor ? 'editor' : 'preview');
     }
   }, [showEditor, isMobile]);
 
@@ -82,10 +97,24 @@ export default function App() {
     if (!element) return;
     setIsDownloading(true);
     try {
-      element.scrollIntoView({ behavior: "instant", block: "start" });
-      await new Promise((r) => setTimeout(r, 150));
-
       const name = `${personal.firstName}_${personal.lastName}`.replace(/\s+/g, "_");
+
+      // Create an off-screen A4 clone so PDF output is consistent on mobile/desktop.
+      const cloned = element.cloneNode(true);
+      const wrapper = document.createElement("div");
+      wrapper.setAttribute("data-cv-editor-pdf-wrapper", "true");
+      wrapper.style.position = "fixed";
+      wrapper.style.left = "-10000px";
+      wrapper.style.top = "0";
+      wrapper.style.width = "210mm";
+      wrapper.style.background = "#ffffff";
+      wrapper.style.padding = "0";
+      wrapper.style.margin = "0";
+      cloned.style.margin = "0";
+      cloned.style.boxShadow = "none";
+      wrapper.appendChild(cloned);
+      document.body.appendChild(wrapper);
+
       const opt = {
         margin: 10,
         filename: `${name}_CV.pdf`,
@@ -99,10 +128,14 @@ export default function App() {
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
 
-      await html2pdf().set(opt).from(element).save();
+      await html2pdf().set(opt).from(cloned).save();
+      if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
     } catch (err) {
       console.error("PDF generation failed:", err);
     } finally {
+      // Safety cleanup if an exception happened after append.
+      const existing = document.querySelector('[data-cv-editor-pdf-wrapper="true"]');
+      if (existing?.parentNode) existing.parentNode.removeChild(existing);
       setIsDownloading(false);
     }
   };
