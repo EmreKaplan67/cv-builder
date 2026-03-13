@@ -17,7 +17,8 @@ A modern, interactive CV builder built with React and Vite. Create professional 
 - **📱 Responsive**: Works seamlessly on desktop and mobile devices
 - **⚡ Performance Optimized**: Uses React.memo for efficient re-rendering
 - **🔧 Form Validation**: Smart validation with helpful error messages
-- **💾 Auto-save**: Changes are reflected immediately in the preview
+- **💾 Persistent Auto-save**: All CV data is stored in `localStorage` and restored on refresh
+- **📄 Download as PDF**: Export your CV as a high-quality A4 PDF
 
 ## 🛠 Tech Stack
 
@@ -131,9 +132,9 @@ src/
 
 ## 🔮 Future Enhancements
 
-- [ ] PDF export functionality
+- [x] PDF export functionality
 - [ ] Multiple CV templates
-- [ ] Local storage for saving drafts
+- [x] Local storage for saving drafts
 - [ ] Import from LinkedIn/other platforms
 - [ ] Dark mode support
 - [ ] More sections (Skills, Projects, Certifications)

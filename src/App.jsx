@@ -3,6 +3,8 @@ import html2pdf from "html2pdf.js";
 import ContentEditor from "./components/ContentEditor/ContentEditor";
 import Preview from "./components/Preview/Preview";
 
+const STORAGE_KEY = "cv-editor-data";
+
 function DownloadButton({ onClick, isDownloading }) {
   return (
     <button
@@ -32,6 +34,19 @@ function DownloadButton({ onClick, isDownloading }) {
 }
 
 export default function App() {
+  const savedData =
+    typeof window !== "undefined"
+      ? (() => {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : null;
+          } catch (e) {
+            console.error("Failed to parse saved CV data:", e);
+            return null;
+          }
+        })()
+      : null;
+
   // Mobile view state
   const [showEditor, setShowEditor] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -93,59 +108,82 @@ export default function App() {
   };
 
   // Personal info state (photo is in-memory only, lost on refresh)
-  const [personal, setPersonal] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    photo: null,
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    website: "https://johndoe.dev",
-    location: "New York, USA",
-    title: "Full Stack Developer",
-    about: "Passionate software developer with 5+ years of experience building web applications. Specialized in React, TypeScript, and Node.js. Love creating intuitive user interfaces and solving complex problems.",
-  });
+  const [personal, setPersonal] = useState(
+    savedData?.personal || {
+      firstName: "John",
+      lastName: "Doe",
+      photo: null,
+      email: "john.doe@example.com",
+      phone: "+1 (555) 123-4567",
+      website: "https://johndoe.dev",
+      location: "New York, USA",
+      title: "Full Stack Developer",
+      about:
+        "Passionate software developer with 5+ years of experience building web applications. Specialized in React, TypeScript, and Node.js. Love creating intuitive user interfaces and solving complex problems.",
+    }
+  );
 
   // Education state
-  const [education, setEducation] = useState([
-    {
-      id: crypto.randomUUID(),
-      school: "Harvard University",
-      degree: "BSc Computer Science",
-      startDate: "2018-09",
-      endDate: "2022-06",
-      location: "Cambridge, MA",
-    },
-  ]);
+  const [education, setEducation] = useState(
+    savedData?.education || [
+      {
+        id: crypto.randomUUID(),
+        school: "Harvard University",
+        degree: "BSc Computer Science",
+        startDate: "2018-09",
+        endDate: "2022-06",
+        location: "Cambridge, MA",
+      },
+    ]
+  );
 
   // Experience state
-  const [experience, setExperience] = useState([
-    {
-      id: crypto.randomUUID(),
-      company: "Tech Corp",
-      position: "Frontend Developer",
-      startDate: "2022-07",
-      endDate: "2024-06",
-      location: "San Francisco, CA",
-      description: "Developed responsive web applications using React and TypeScript. Collaborated with cross-functional teams to deliver high-quality user experiences.",
-    },
-  ]);
+  const [experience, setExperience] = useState(
+    savedData?.experience || [
+      {
+        id: crypto.randomUUID(),
+        company: "Tech Corp",
+        position: "Frontend Developer",
+        startDate: "2022-07",
+        endDate: "2024-06",
+        location: "San Francisco, CA",
+        description:
+          "Developed responsive web applications using React and TypeScript. Collaborated with cross-functional teams to deliver high-quality user experiences.",
+      },
+    ]
+  );
 
   // Certifications state
-  const [certifications, setCertifications] = useState([
-    {
-      id: crypto.randomUUID(),
-      name: "AWS Certified Developer",
-      issuer: "Amazon Web Services",
-      date: "2024-01",
-      url: "",
-    },
-  ]);
+  const [certifications, setCertifications] = useState(
+    savedData?.certifications || [
+      {
+        id: crypto.randomUUID(),
+        name: "AWS Certified Developer",
+        issuer: "Amazon Web Services",
+        date: "2024-01",
+        url: "",
+      },
+    ]
+  );
 
   // Languages state
-  const [languages, setLanguages] = useState([
-    { id: crypto.randomUUID(), language: "English", proficiency: "Native" },
-    { id: crypto.randomUUID(), language: "Spanish", proficiency: "Intermediate" },
-  ]);
+  const [languages, setLanguages] = useState(
+    savedData?.languages || [
+      { id: crypto.randomUUID(), language: "English", proficiency: "Native" },
+      { id: crypto.randomUUID(), language: "Spanish", proficiency: "Intermediate" },
+    ]
+  );
+
+  // Persist CV data to localStorage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const dataToSave = { personal, education, experience, certifications, languages };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    } catch (e) {
+      console.error("Failed to save CV data:", e);
+    }
+  }, [personal, education, experience, certifications, languages]);
 
   return (
     <div className="flex h-screen relative">
@@ -167,9 +205,6 @@ export default function App() {
 
         {/* Right Side: Preview */}
         <div className="w-1/2 flex flex-col overflow-hidden">
-          <div className="flex justify-end p-3 border-b border-gray-200 bg-white shrink-0">
-            <DownloadButton onClick={handleDownloadPDF} isDownloading={isDownloading} />
-          </div>
           <div className="flex-1 p-4 overflow-y-auto">
             <div ref={!isMobile ? previewRef : null}>
               <Preview
@@ -180,6 +215,9 @@ export default function App() {
                 languages={languages}
               />
             </div>
+          </div>
+          <div className="flex justify-end p-3 border-t border-gray-200 bg-white shrink-0">
+            <DownloadButton onClick={handleDownloadPDF} isDownloading={isDownloading} />
           </div>
         </div>
       </div>
@@ -201,9 +239,6 @@ export default function App() {
           />
         ) : (
           <div className="w-full flex flex-col h-screen overflow-hidden">
-            <div className="flex justify-end p-3 border-b border-gray-200 bg-white shrink-0">
-              <DownloadButton onClick={handleDownloadPDF} isDownloading={isDownloading} />
-            </div>
             <div className="flex-1 p-4 overflow-y-auto">
               <div ref={isMobile ? previewRef : null}>
                 <Preview
@@ -214,6 +249,9 @@ export default function App() {
                   languages={languages}
                 />
               </div>
+            </div>
+            <div className="flex justify-end p-3 border-t border-gray-200 bg-white shrink-0">
+              <DownloadButton onClick={handleDownloadPDF} isDownloading={isDownloading} />
             </div>
           </div>
         )}
