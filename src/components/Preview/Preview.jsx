@@ -13,7 +13,10 @@ export default function Preview({ personal, education, experience, certification
   return (
     <div className="bg-white max-w-[210mm] mx-auto py-12 px-14 text-[11pt] leading-relaxed shadow-sm" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
       {/* Header Section */}
-      <div className="pb-6 flex gap-6 flex-wrap border-b border-gray-200">
+      <div
+        className="pb-6 flex gap-6 flex-wrap border-b border-gray-200"
+        data-cv-header="true"
+      >
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
             {personal.firstName} {personal.lastName}
@@ -68,7 +71,10 @@ export default function Preview({ personal, education, experience, certification
           <h2 className={sectionTitle}>
             About
           </h2>
-          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-[10pt]">
+          <p
+            className="text-gray-700 leading-relaxed whitespace-pre-wrap text-[10pt]"
+            data-cv-block="avoid-break"
+          >
             {personal.about}
           </p>
         </div>
@@ -100,7 +106,10 @@ export default function Preview({ personal, education, experience, certification
                   </div>
                 </div>
                 {exp.description && (
-                  <p className="text-[10pt] text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  <p
+                    className="text-[10pt] text-gray-700 leading-relaxed whitespace-pre-wrap"
+                    data-cv-block="avoid-break"
+                  >
                     {exp.description}
                   </p>
                 )}

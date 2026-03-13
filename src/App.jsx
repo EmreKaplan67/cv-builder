@@ -109,6 +109,21 @@ export default function App() {
         clonedPhoto.style.objectFit = "cover";
         clonedPhoto.style.borderRadius = "9999px";
       }
+
+      // Prevent header from wrapping so the photo stays on the right in PDF.
+      const clonedHeader = cloned.querySelector('[data-cv-header="true"]');
+      if (clonedHeader) {
+        clonedHeader.style.display = "flex";
+        clonedHeader.style.flexWrap = "nowrap";
+        clonedHeader.style.alignItems = "flex-start";
+      }
+
+      // Try to avoid cutting important paragraphs across pages.
+      cloned.querySelectorAll('[data-cv-block="avoid-break"]').forEach((el) => {
+        el.style.pageBreakInside = "avoid";
+        // For modern browsers:
+        el.style.breakInside = "avoid";
+      });
       const wrapper = document.createElement("div");
       wrapper.setAttribute("data-cv-editor-pdf-wrapper", "true");
       wrapper.style.position = "fixed";
