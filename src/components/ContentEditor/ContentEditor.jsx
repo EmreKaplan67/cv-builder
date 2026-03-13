@@ -4,6 +4,7 @@ import PersonalCard from "../Cards/PersonalCard";
 import ExperienceCard from "../Cards/ExperienceCard";
 import CertificationsCard from "../Cards/CertificationsCard";
 import LanguagesCard from "../Cards/LanguagesCard";
+import PrivacyNotice from "../PrivacyNotice/PrivacyNotice";
 
 export default function ContentEditor({
   personal,
@@ -27,6 +28,9 @@ export default function ContentEditor({
         setCertifications={setCertifications}
       />
       <LanguagesCard languages={languages} setLanguages={setLanguages} />
+      <div className="pt-4 mt-2 border-t border-gray-200">
+        <PrivacyNotice />
+      </div>
     </div>
   );
 }
