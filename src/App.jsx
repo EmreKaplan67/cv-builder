@@ -216,7 +216,7 @@ export default function App() {
               />
             </div>
           </div>
-          <div className="flex justify-end p-3 border-t border-gray-200 bg-white shrink-0">
+          <div className="flex justify-start p-3 border-t border-gray-200 bg-white shrink-0">
             <DownloadButton onClick={handleDownloadPDF} isDownloading={isDownloading} />
           </div>
         </div>
@@ -250,7 +250,7 @@ export default function App() {
                 />
               </div>
             </div>
-            <div className="flex justify-end p-3 border-t border-gray-200 bg-white shrink-0">
+            <div className="flex justify-start p-3 border-t border-gray-200 bg-white shrink-0">
               <DownloadButton onClick={handleDownloadPDF} isDownloading={isDownloading} />
             </div>
           </div>
