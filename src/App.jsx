@@ -101,6 +101,14 @@ export default function App() {
 
       // Create an off-screen A4 clone so PDF output is consistent on mobile/desktop.
       const cloned = element.cloneNode(true);
+      // Force a consistent avatar size in the PDF regardless of original image dimensions.
+      const clonedPhoto = cloned.querySelector('[data-cv-photo="true"]');
+      if (clonedPhoto) {
+        clonedPhoto.style.width = "80px";
+        clonedPhoto.style.height = "80px";
+        clonedPhoto.style.objectFit = "cover";
+        clonedPhoto.style.borderRadius = "9999px";
+      }
       const wrapper = document.createElement("div");
       wrapper.setAttribute("data-cv-editor-pdf-wrapper", "true");
       wrapper.style.position = "fixed";

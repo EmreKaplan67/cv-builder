@@ -57,6 +57,7 @@ export default function Preview({ personal, education, experience, certification
             src={personal.photo}
             alt={`${personal.firstName} ${personal.lastName}`}
             className="w-20 h-20 rounded-full object-cover shrink-0"
+            data-cv-photo="true"
           />
         )}
       </div>
