@@ -151,7 +151,17 @@ export default function App() {
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
 
-      await html2pdf().set(opt).from(cloned).save();
+      // Generate PDF as a Blob and trigger a download, which works better
+      // with mobile "Save to device" and share flows than opening a new tab.
+      const blob = await html2pdf().set(opt).from(cloned).outputPdf("blob");
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `${name}_CV.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
       if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
     } catch (err) {
       console.error("PDF generation failed:", err);
